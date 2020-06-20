@@ -10,18 +10,18 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QTextCursor>
-#include <iostream>
 MainWindow::MainWindow(QString& fileName , QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    ui->setupUi(this);
+    ui->findEdit->hide();
     QFile fin;
     settingMap.emplace(std::make_pair("font-size",""));
     settingMap.emplace(std::make_pair("font-family",""));
     settingMap.emplace(std::make_pair("color-theme",""));
     settingFile =  QCoreApplication::applicationDirPath()+"/setting.dat";
     fin.setFileName(settingFile);
-    ui->setupUi(this);
     this->setWindowTitle("Text Blade");
     if(!fin.open(QIODevice::ReadOnly))
     {
@@ -225,4 +225,24 @@ void MainWindow::closePair(QTextCursor& dc ,char ch)
     ui->textEdit->setText(temp);
     dc.setPosition(pos);
     ui->textEdit->setTextCursor(dc);
+}
+
+void MainWindow::on_find_triggered()
+{
+    ui->findEdit->show();
+}
+
+void MainWindow::on_reset_triggered()
+{
+    ui->findEdit->hide();
+}
+
+void MainWindow::on_findEdit_returnPressed()
+{
+    ui->findEdit->hide();
+    int index = ui->textEdit->toPlainText().indexOf(ui->findEdit->text(),0);
+    QTextCursor dc(ui->textEdit->textCursor());
+    dc.setPosition(index);
+    ui->textEdit->setTextCursor(dc);
+    ui->statusbar->showMessage(QString::number(dc.position()));
 }
