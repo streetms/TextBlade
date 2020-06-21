@@ -26,6 +26,13 @@ MainWindow::MainWindow(QString& fileName , QWidget *parent)
     if(!fin.open(QIODevice::ReadOnly))
     {
         fin.open(QIODevice::WriteOnly);
+        QTextStream output;
+        output.setDevice(&fin);
+        settingMap["font-size"] = "15";
+        settingMap["color-theme"] = "Dark";
+        output << "font-size: " + settingMap["font-size"] + "\n";
+        output << "font-family: " + settingMap["font-family"] + "\n";
+        output << "color-theme: " + settingMap["color-theme"] + "\n";
         fin.close();
     }
     else
@@ -244,5 +251,4 @@ void MainWindow::on_findEdit_returnPressed()
     QTextCursor dc(ui->textEdit->textCursor());
     dc.setPosition(index);
     ui->textEdit->setTextCursor(dc);
-    ui->statusbar->showMessage(QString::number(dc.position()));
 }

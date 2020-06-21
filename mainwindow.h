@@ -45,7 +45,6 @@ private slots:
     void on_findEdit_returnPressed();
 
 private:
-    QTextCursor* dc;
     int charCount;
     QString settingFile;
     std::map<QString,QString> settingMap;

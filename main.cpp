@@ -1,4 +1,3 @@
-//второй комит
 #include "mainwindow.h"
 #include <QApplication>
 #include <QString>
@@ -11,7 +10,7 @@ int main(int argc, char* argv[])
         arg = argv[1];
     if(arg == "--version")
     {
-        qDebug() << "1.1.0";
+        qDebug() << "1.1.1";
         return 0;
     }
     QApplication a(argc, argv);
