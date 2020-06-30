@@ -1,25 +1,28 @@
 #include "mainwindow.h"
-#include <iostream>
 #include <map>
 #include "ui_mainwindow.h"
 #include "settingwindow.h"
 #include <QMessageBox>
 #include <QString>
-#include <iostream>
 #include <QTextEdit>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QTextCursor>
+#include <mysyntax.h>
+#include <QDebug>
 MainWindow::MainWindow(QString& fileName , QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->textEdit->setTabStopWidth(35);
     ui->findEdit->hide();
     QFile fin;
-    settingMap.emplace(std::make_pair("font-size",""));
-    settingMap.emplace(std::make_pair("font-family",""));
-    settingMap.emplace(std::make_pair("color-theme",""));
+    settingMap.emplace(std::pair("font-size",""));
+    settingMap.emplace(std::pair("font-family",""));
+    settingMap.emplace(std::pair("color-theme",""));
+    settingMap.emplace(std::pair("syntax-highlighting",""));
+
     settingFile =  QCoreApplication::applicationDirPath()+"/setting.dat";
     fin.setFileName(settingFile);
     this->setWindowTitle("Text Blade");
@@ -30,9 +33,10 @@ MainWindow::MainWindow(QString& fileName , QWidget *parent)
         output.setDevice(&fin);
         settingMap["font-size"] = "15";
         settingMap["color-theme"] = "Dark";
+        settingMap["syntax-highlighting"] = "No";
         output << "font-size: " + settingMap["font-size"] + "\n";
         output << "font-family: " + settingMap["font-family"] + "\n";
-        output << "color-theme: " + settingMap["color-theme"] + "\n";
+        output << "syntax-highlighting: " + settingMap["syntax-highlighting"] + "\n";
         fin.close();
     }
     else
@@ -47,6 +51,8 @@ MainWindow::MainWindow(QString& fileName , QWidget *parent)
         input >> temp;
         input >> settingMap["color-theme"];
         input >> temp;
+        input >> settingMap["syntax-highlighting"];
+        input >> temp;
     }
     QFont font;
     font.setFamily(settingMap["font-family"]);
@@ -54,8 +60,10 @@ MainWindow::MainWindow(QString& fileName , QWidget *parent)
     font.setBold(ui->textEdit->font().bold());
     ui->textEdit->setFont(font);
     setColorTheme(settingMap["color-theme"]);
+    if(settingMap["syntax-highlighting"] == "C++")
+        syntax = new MySyntax(ui->textEdit->document());
     fin.close();
-    if(!fileName.isEmpty())
+    if(!fileName.isNull())
     {
         file.open(fileName);
         ui->textEdit->setText(file.getText());
@@ -63,6 +71,7 @@ MainWindow::MainWindow(QString& fileName , QWidget *parent)
         setWindowTitle("Text Blade - " + file.getFileName());
     }
     setWindowTitle("Text Blade - " + file.getFileName());
+
 }
 MainWindow::~MainWindow()
 {
@@ -74,7 +83,9 @@ MainWindow::~MainWindow()
     output << "font-size: " + settingMap["font-size"] + "\n";
     output << "font-family: " + settingMap["font-family"] + "\n";
     output << "color-theme: " + settingMap["color-theme"] + "\n";
+    output << "syntax-highlighting: " + settingMap["syntax-highlighting"] + "\n";
     fout.close();
+    delete syntax;
     delete ui;
 }
 
@@ -98,6 +109,7 @@ void MainWindow::on_setting_triggered()
     font.setBold(ui->textEdit->font().bold());
     ui->textEdit->setFont(font);
     setColorTheme(settingMap["color-theme"]);
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -251,4 +263,9 @@ void MainWindow::on_findEdit_returnPressed()
     QTextCursor dc(ui->textEdit->textCursor());
     dc.setPosition(index);
     ui->textEdit->setTextCursor(dc);
+}
+
+void MainWindow::on_aboutQt_triggered()
+{
+    QMessageBox::aboutQt(this,"About Qt");
 }

@@ -5,12 +5,12 @@
 int main(int argc, char* argv[])
 {
 
-    QString arg = "";
+    QString arg = nullptr;
     if(argc > 1)
         arg = argv[1];
     if(arg == "--version")
     {
-        qDebug() << "1.1.1";
+        qDebug() << "1.2.1";
         return 0;
     }
     QApplication a(argc, argv);

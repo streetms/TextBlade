@@ -55,6 +55,27 @@
      </item>
     </widget>
    </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>подсветка синтасиса</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="syntax">
+     <item>
+      <property name="text">
+       <string>обычный текст</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>C++</string>
+      </property>
+     </item>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

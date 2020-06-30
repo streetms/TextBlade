@@ -4,9 +4,9 @@
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <map>
-#include <iostream>
 #include <QTextCursor>
 #include "file.h"
+#include "mysyntax.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -44,7 +44,10 @@ private slots:
 
     void on_findEdit_returnPressed();
 
+    void on_aboutQt_triggered();
+
 private:
+    MySyntax* syntax = nullptr;
     int charCount;
     QString settingFile;
     std::map<QString,QString> settingMap;

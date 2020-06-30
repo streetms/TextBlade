@@ -21,7 +21,10 @@ private slots:
     void on_fontComboBox_currentTextChanged(const QString &arg1);
 
     void on_colorTheme_currentTextChanged(const QString &arg1);
+    void on_syntax_currentTextChanged(const QString &arg1);
+
 private:
+    bool first;
     std::map<QString,QString>& settingMap;
     Ui::SettingWindow *ui;
 };
