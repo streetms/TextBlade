@@ -2,20 +2,26 @@
 #include "ui_settingwindow.h"
 #include <QFont>
 #include <QMessageBox>
-SettingWindow::SettingWindow(std::map<QString,QString>& settingMap,QWidget *parent) :
+#include <QDebug>
+
+SettingWindow::SettingWindow(std::map<QString,QString>& settingMap, double factor, QWidget *parent) :
     settingMap(settingMap), QDialog(parent),
     ui(new Ui::SettingWindow)
 {
-    first = true;
     ui->setupUi(this);
     ui->fontSize->setValue(settingMap["font-size"].toInt());
     ui->fontComboBox->setCurrentText(settingMap["font-family"]);
     ui->colorTheme->setCurrentText(settingMap["color-theme"]);
+    if(settingMap["wrap-mode"] == "On")
+        ui->wrapMode->setCurrentText("вкл");
+    else
+        ui->wrapMode->setCurrentText("выкл");
     if((settingMap["syntax-highlighting"]) == "No")
         ui->syntax->setCurrentText("обычный текст");
     else
         ui->syntax->setCurrentText(settingMap["syntax-highlighting"]);
-    first = false;
+
+    ui->fontSize->setMinimum(12);
 }
 
 SettingWindow::~SettingWindow()
@@ -25,14 +31,14 @@ SettingWindow::~SettingWindow()
 
 void SettingWindow::on_fontSize_valueChanged(int arg1)
 {
-    settingMap["font-size"] = QString::number(arg1);
+    if(arg1 >= 12 && arg1 <= 50)
+        settingMap["font-size"] = QString::number(arg1);
 }
 
 void SettingWindow::on_fontComboBox_currentTextChanged(const QString &arg1)
 {
     settingMap["font-family"] = arg1;
 }
-
 
 void SettingWindow::on_colorTheme_currentTextChanged(const QString &arg1)
 {
@@ -41,7 +47,16 @@ void SettingWindow::on_colorTheme_currentTextChanged(const QString &arg1)
 
 void SettingWindow::on_syntax_currentTextChanged(const QString &arg1)
 {
-    settingMap["syntax-highlighting"] = arg1;
-    if(!first)
-        QMessageBox::information(this,"Внимание!!","чтобы изменения вступили в силу необходимо перезапустить приложение");
+    if(arg1 == "обычный текст")
+        settingMap["syntax-highlighting"] = "No";
+    else
+        settingMap["syntax-highlighting"] = arg1;
+}
+
+void SettingWindow::on_wrapMode_currentTextChanged(const QString &arg1)
+{
+    if(arg1 == "вкл")
+        settingMap["wrap-mode"] = "On";
+    else
+        settingMap["wrap-mode"] = "Off";
 }

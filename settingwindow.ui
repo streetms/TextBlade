@@ -74,6 +74,32 @@
        <string>C++</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>python</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>перенос строки</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="wrapMode">
+     <item>
+      <property name="text">
+       <string>вкл</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>выкл</string>
+      </property>
+     </item>
     </widget>
    </item>
   </layout>

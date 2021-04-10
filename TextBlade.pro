@@ -27,13 +27,16 @@ SOURCES += \
         mainwindow.cpp \
         file.cpp \
         mysyntax.cpp \
-        settingwindow.cpp
-
+        settingwindow.cpp \
+        codeeditor.cpp \
+        linenumberarea.cpp
 HEADERS += \
         mainwindow.h \
         file.h \
         mysyntax.h \
-        settingwindow.h
+        settingwindow.h \
+        codeeditor.h \
+        linenumberarea.h
 FORMS += \
         mainwindow.ui \
         settingwindow.ui
