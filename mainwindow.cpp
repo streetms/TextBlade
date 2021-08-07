@@ -9,7 +9,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QTextCursor>
-
+#include <QRegularExpression>
 
 MainWindow::MainWindow(QString& fileName , QWidget *parent)
     : QMainWindow(parent)
@@ -63,7 +63,8 @@ MainWindow::MainWindow(QString& fileName , QWidget *parent)
 
     if(!fileName.isNull())
     {
-        file.open(fileName);
+        file.setFileName(fileName);
+        file.open(QIODevice::WriteOnly);
 
         if(file.type() != fileType)
         {
@@ -73,14 +74,14 @@ MainWindow::MainWindow(QString& fileName , QWidget *parent)
             settingMap["syntax-highlighting"] = fileType;
         }
 
-        ui->textEdit->setPlainText(file.getText());
-        file.save(ui->textEdit->toPlainText());
-        setWindowTitle("Text Blade - " + file.getFileName());
+        ui->textEdit->setPlainText(file.readAll());
+        file.write((ui->textEdit->toPlainText().toStdString().data()));
+        setWindowTitle("Text Blade - " + file.fileName());
     }
 
-    setWindowTitle("Text Blade - " + file.getFileName());
+    setWindowTitle("Text Blade - " + file.fileName());
     int fontWidth = QFontMetrics(ui->textEdit->currentCharFormat().font()).averageCharWidth();
-    ui->textEdit->setTabStopWidth( 4 * fontWidth );
+    ui->textEdit->setTabStopDistance(4 * fontWidth );
 
     if(settingMap["wrap-mode"] == "Off")
     {
@@ -93,7 +94,7 @@ MainWindow::MainWindow(QString& fileName , QWidget *parent)
     }
     ui->textEdit->update();
 
-    settingWindow = new SettingWindow(settingMap,factor);
+    settingWindow = new SettingWindow(settingMap);
     settingWindow->setModal(true);
 }
 
@@ -116,11 +117,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_save_triggered()
 {
-    if(file.isExist())
-        file.save(ui->textEdit->toPlainText());
+    if(!file.fileName().isEmpty())
+    {
+        file.open(QIODevice::WriteOnly);
+        file.write(ui->textEdit->toPlainText().toStdString().data());
+        file.close();
+    }
     else
         on_save_as_triggered();
-    setWindowTitle("Text Blade - " + file.getFileName());
+    setWindowTitle("Text Blade - " + file.fileName());
 }
 
 void MainWindow::on_setting_triggered()
@@ -158,7 +163,7 @@ void MainWindow::on_setting_triggered()
     }
 
     int fontWidth = QFontMetrics(ui->textEdit->currentCharFormat().font()).averageCharWidth();
-    ui->textEdit->setTabStopWidth( 4 * fontWidth );
+    ui->textEdit->setTabStopDistance( 4 * fontWidth );
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -171,7 +176,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel ,
     this);
 
-    if(!file.isExist() && !ui->textEdit->toPlainText().isEmpty())
+    if(file.fileName().isEmpty() && !ui->textEdit->toPlainText().isEmpty())
     {
         quit.setText("создать новый файл?");
         quit.setButtonText(QMessageBox::Yes, "создать");
@@ -182,7 +187,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     if(!file.isConserved() && ui->textEdit->toPlainText().isEmpty())
     {
-        quit.setText("Сохранить изменения в файле " +file.getPath() + "?");
+        quit.setText("Сохранить изменения в файле " + file.fileName() + "?");
         quit.setButtonText(QMessageBox::Yes, "сохранить");
         quit.setButtonText(QMessageBox::No, "не сохраненять");
         quit.setButtonText(QMessageBox::Cancel,"отмена");
@@ -201,7 +206,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
                 QApplication::quit();
                 break;
             case QMessageBox::Yes :
-                if(file.isExist())
+                if(file.isOpen())
                     on_save_triggered();
                 else
                     on_save_as_triggered();
@@ -216,8 +221,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::on_open_triggered()
 {
     QString path = QFileDialog::getOpenFileName(0,"выбор файла", "", "");
-    file.open(path);
-
+    file.setFileName(path);
+    file.open(QIODevice::ReadOnly);
     if(file.type() != fileType)
     {
         fileType = file.type();
@@ -226,16 +231,15 @@ void MainWindow::on_open_triggered()
         settingMap["syntax-highlighting"] = fileType;
     }
 
-    ui->textEdit->setPlainText(file.getText());
-    file.save(ui->textEdit->toPlainText());
-    setWindowTitle("Text Blade - " + file.getFileName());
+    ui->textEdit->setPlainText(file.readAll().constData());
+    setWindowTitle("Text Blade - " + file.fileName());
+    file.close();
 }
 
 void MainWindow::on_create_triggered()
 {
     QString path = QFileDialog::getSaveFileName(0, "создание файла", "", "");
-    file.create(path);
-
+    file.createEmptyFile(path);
     if(file.type() != fileType)
     {
         fileType = file.type();
@@ -244,18 +248,19 @@ void MainWindow::on_create_triggered()
         settingMap["syntax-highlighting"] = fileType;
     }
 
-    setWindowTitle("Text Blade - "+ file.getFileName());
+    setWindowTitle("Text Blade - "+ file.fileName());
 }
 
 void MainWindow::on_save_as_triggered()
 {
     QString path = QFileDialog::getSaveFileName(0, "сохранение файла", "", "");
-
     if(!path.isEmpty())
     {
-        file.create(path);
-        file.save(ui->textEdit->toPlainText());
-        setWindowTitle("Text Blade - " + file.getFileName());
+        file.createEmptyFile(path);
+        file.open(QIODevice::WriteOnly);
+        file.write(ui->textEdit->toPlainText().toStdString().data());
+        setWindowTitle("Text Blade - " + file.fileName());
+        file.close();
     }
 }
 
@@ -285,7 +290,7 @@ void MainWindow::closePair(QTextCursor& dc ,char ch)
     QChar c(ch);
     QString temp = ui->textEdit->toPlainText();
     int pos = dc.position();
-
+    
     temp.insert(pos,c);
 
     ui->textEdit->setPlainText(temp);
@@ -331,10 +336,13 @@ void MainWindow::readSettingFile(QFile &fin)
     QTextStream input;
     QString temp;
     input.setDevice(&fin);
+
     input >> temp;
     input >> settingMap["font-size"];
     input >> temp;
+
     settingMap["font-family"] = input.readLine();
+
     input >> temp;
     input >> settingMap["color-theme"];
     input >> temp;
@@ -367,7 +375,7 @@ void MainWindow::on_up_triggered()
     font.setFamily(settingMap["font-family"]);
     ui->textEdit->setFont(font);
     int fontWidth = QFontMetrics(ui->textEdit->currentCharFormat().font()).averageCharWidth();
-    ui->textEdit->setTabStopWidth( 4 * fontWidth );
+    ui->textEdit->setTabStopDistance(4 * fontWidth );
 }
 
 void MainWindow::on_down_triggered()
@@ -381,7 +389,7 @@ void MainWindow::on_down_triggered()
     font.setFamily(settingMap["font-family"]);
     ui->textEdit->setFont(font);
     int fontWidth = QFontMetrics(ui->textEdit->currentCharFormat().font()).averageCharWidth();
-    ui->textEdit->setTabStopWidth( 4 * fontWidth );
+    ui->textEdit->setTabStopDistance(4 * fontWidth );
 }
 
 void MainWindow::on_textEdit_textChanged()
@@ -406,11 +414,11 @@ void MainWindow::on_textEdit_textChanged()
             closePair(dc,'\'');
     }
 
-    if(!(ui->textEdit->toPlainText().isEmpty() && !file.isExist()))
-        setWindowTitle("Text Blade - " + file.getFileName() + "*");
+    if(!(ui->textEdit->toPlainText().isEmpty() && !file.isOpen()))
+        setWindowTitle("Text Blade - " + file.fileName() + "*");
 
     file.change();
-    int size = temp.split(QRegExp("[\\s]+\\w")).size();
+    int size = temp.split(QRegularExpression("[\\s]+\\w")).count();
 
     if(temp[0] == QChar(' ') || temp[0] == QChar('\t') || temp[0] == QChar('\n') || temp.isEmpty() )
         size--;

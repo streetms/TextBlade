@@ -1,56 +1,44 @@
 #include "file.h"
 #include <QFileInfo>
-#include <QFile>
 
-File::File(QString& name) noexcept
-    : path(name)
-{
-    open(name);
-}
-
-File::File() : exist(false)
+File::File() : QFile::QFile()
 {
     conserved = true;
 }
 
-File::~File()
+File::File(const QString &name) : QFile::QFile(name)
 {
-}
-
-void File::open(QString &name) noexcept
-{
-    exist = true;
-    conserved = true;
-    path = name;
-    QFileInfo FileName(path);
-    fileName = FileName.fileName();
+    QFileInfo FileName(name);
     suffix = FileName.completeSuffix();
+    conserved = true;
 }
 
-void File::save(QString &&newText) noexcept
+File::File(QObject* parent) : QFile::QFile(parent)
 {
     conserved = true;
-    QFile fout;
-    fout.setFileName(path);
-    fout.open(QIODevice::WriteOnly);
-    output.setDevice(&fout);
-    output << newText.toUtf8();
 }
 
-QString File::getText() const noexcept
+File::File(const QString& name,QObject* parent)
+    : QFile::QFile(name,parent)
 {
-    QFile fin;
-    QTextStream input;
-    fin.setFileName(path);
-    fin.open(QIODevice::ReadOnly);
-    input.setDevice(&fin);
-
-    return input.readAll();
+    suffix = QFileInfo(name).completeSuffix();
+    conserved = true;
 }
 
-QString File::getFileName() const noexcept
+File::File(QFilePrivate& add, QObject* parent)
+    : QFile::QFile(add,parent)
 {
-    return fileName;
+    conserved = true;
+}
+
+QString File::type()
+{
+    if(suffix == "cpp" || suffix == "h")
+        return "C++";
+    else if(suffix == "py")
+        return "python";
+    else
+        return "plain text";
 }
 
 void File::change() noexcept
@@ -58,45 +46,16 @@ void File::change() noexcept
     conserved = false;
 }
 
-bool File::isConserved() const noexcept
+void File::createEmptyFile(QString& name) noexcept
+{
+    this->setFileName(name);
+    this->open(QIODevice::WriteOnly);
+    suffix = QFileInfo(name).completeSuffix();
+    conserved = true;
+    this->close();
+}
+
+bool File::isConserved() noexcept
 {
     return conserved;
-}
-
-QString File::getPath() const noexcept
-{
-    return path;
-}
-
-bool File::isExist() const  noexcept
-{
-    return exist;
-}
-
-void File::create(QString& path) noexcept
-{
-    this->path = path;
-    conserved = true;
-    exist = true;
-    QFile fout;
-    fout.setFileName(path);
-    fout.open(QIODevice::WriteOnly);
-    QFileInfo FileName(path);
-    fileName = FileName.fileName();
-    suffix = FileName.completeSuffix();
-}
-
-void File::setFileName(QString path) noexcept
-{
-    fileName = path;
-}
-
-QString File::type() const noexcept
-{
-    if(suffix == "cpp" || suffix == "h")
-        return "C++";
-    else if(suffix == "py")
-        return "python";
-    else
-        return "Plain";
 }

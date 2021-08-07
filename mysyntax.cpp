@@ -47,7 +47,6 @@ void MySyntax::highlightBlock(const QString &str)
 {
     int nState = previousBlockState();
     int nStart = 0;
-
     if(syntax != "No")
     {
         for(int i = 0; i < str.length();++i)
@@ -207,7 +206,7 @@ QString MySyntax::getKeyWord(int nPos , const QString& str,const QStringList& li
 {
     QString strTemp = "";
 
-    for(QString strKeyWord : list)
+    for(const QString& strKeyWord : list)
     {
         QString temp = str.mid(nPos,strKeyWord.length());
         int end = nPos+temp.length();

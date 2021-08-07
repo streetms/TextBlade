@@ -13,7 +13,7 @@ class SettingWindow : public QDialog
     Q_OBJECT
 
 public:
-    explicit SettingWindow(std::map<QString,QString>&,double factor,QWidget *parent = 0);
+    explicit SettingWindow(std::map<QString,QString>&, QWidget *parent = 0);
     ~SettingWindow();
 
 private slots:

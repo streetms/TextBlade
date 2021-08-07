@@ -1,42 +1,26 @@
-#pragma once
+#ifndef FILE_H
+#define FILE_H
 
-#include <QString>
 #include <QFile>
-#include <QTextStream>
 
-class File
+class File : public QFile
 {
 public:
     File();
-    explicit File(QString& name) noexcept;
-    ~File();
+    File(const QString& name);
+    File(QObject* parent);
+    File(const QString& name,QObject* parent);
+    File(QFilePrivate& add, QObject* parent = nullptr);
 
-    void save (QString&& text) noexcept;
-    void open(QString& path) noexcept;
+    QString type();
+
     void change() noexcept;
-    void create(QString& path) noexcept;
-    void setFileName(QString path) noexcept;
+    void createEmptyFile(QString& name) noexcept;
 
-    bool isConserved() const noexcept;
-    bool isExist() const noexcept;
-
-    QString type() const noexcept;
-    QString getText() const noexcept;
-    QString getFileName() const noexcept;
-    QString getPath() const noexcept;
-
+    bool isConserved() noexcept;
 private:
-    void CountWord(QString &Text) const noexcept;
-
-    bool exist;
-    bool conserved;
-
-    mutable size_t words;
-
-    QTextStream input;
-    QTextStream output;
-
-    QString path;
-    QString fileName;
     QString suffix;
+    bool conserved;
 };
+
+#endif // FILE_H

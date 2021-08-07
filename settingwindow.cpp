@@ -4,8 +4,8 @@
 #include <QMessageBox>
 #include <QDebug>
 
-SettingWindow::SettingWindow(std::map<QString,QString>& settingMap, double factor, QWidget *parent) :
-    settingMap(settingMap), QDialog(parent),
+SettingWindow::SettingWindow(std::map<QString,QString>& settingMap, QWidget *parent) :
+    QDialog(parent),settingMap(settingMap),
     ui(new Ui::SettingWindow)
 {
     ui->setupUi(this);

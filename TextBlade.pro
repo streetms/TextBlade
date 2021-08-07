@@ -40,3 +40,5 @@ HEADERS += \
 FORMS += \
         mainwindow.ui \
         settingwindow.ui
+
+RESOURCES +=

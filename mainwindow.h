@@ -6,8 +6,7 @@
 #include "file.h"
 #include "mysyntax.h"
 #include "settingwindow.h"
-#include <QList>
-#include <QSignalMapper>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -20,7 +19,7 @@ public:
     ~MainWindow();
 
     void closePair(QTextCursor&, char ch);
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
     void setColorTheme(const QString& );
     void readSettingFile(QFile& fin);
     void createSettingFile(QFile& fin);

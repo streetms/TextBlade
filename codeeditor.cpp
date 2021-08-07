@@ -8,8 +8,6 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
     enable = this->lineWrapMode();
     lineNumberArea = new LineNumberArea(this);
-
-    qDebug() << lineNumberArea->styleSheet();
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     updateLineNumberAreaWidth(0);
@@ -33,9 +31,7 @@ int CodeEditor::lineNumberAreaWidth()
         line /= 10;
         digits++;
     }
-
-    int space = fontMetrics().width(QLatin1Char('9')) * digits;
-
+    int space = fontMetrics().xHeight()*digits;
     return space+10;
 }
 
